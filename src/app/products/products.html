@@ -1,0 +1,201 @@
+<div class="container py-5">
+  <h1 class="text-center mb-5">Product List</h1>
+
+  <div class="text-center mb-4">
+    <button class="btn btn-primary rounded-pill shadow" (click)="showAddProductForm.set(true)">
+      Add New Product
+    </button>
+  </div>
+
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+    @for (product of products(); track product.productID) {
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body position-relative">
+            <h5 class="card-title text-primary">{{ product.name }}</h5>
+            <p class="card-text mb-1 text-muted">ID: {{ product.productID }}</p>
+            <p class="card-text mb-1">Price: <span class="text-success fw-bold">{{ product.price | currency : 'INR' }}</span></p>
+            <p class="card-text mb-1">
+              Stock: <span [ngClass]="{'text-danger': product.stockLevel < 10, 'text-success': product.stockLevel >= 10}">{{ product.stockLevel }}</span>
+            </p>
+            <p class="card-text fst-italic mt-3">{{ product.description }}</p>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <button class="btn btn-warning btn-sm" (click)="openEditForm(product)">
+                <i class="bi bi-pencil-square"></i> Edit
+              </button>
+              <button class="btn btn-success btn-sm" (click)="orderProduct(product)">
+                <i class="bi bi-cart-plus"></i> Order
+              </button>
+            </div>
+            
+            <div class="position-absolute top-0 end-0 p-2">
+              <button class="btn btn-danger btn-sm rounded-circle shadow-sm" (click)="deleteProduct(product.productID)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6a.5.5 0 0 0-.5-.5z"/>
+                  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1zM4.118 4H11.882L12 4.059V13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4.059zM2.5 3a.5.5 0 0 0-.5.5v.5h11v-.5a.5.5 0 0 0-.5-.5H9.428l-1.34-1.34a.5.5 0 0 0-.707 0L6.572 2H2.5z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <p class="text-center text-muted w-100">No products found.</p>
+    }
+  </div>
+
+  @if (productsError()) {
+    <div class="alert alert-danger text-center mt-4">
+      {{ productsError() }}
+    </div>
+  }
+
+  @if (showAddProductForm()) {
+    <div class="modal d-block" tabindex="-1" role="dialog" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add New Product</h5>
+            <button type="button" class="btn-close" aria-label="Close" (click)="showAddProductForm.set(false)"></button>
+          </div>
+          <div class="modal-body">
+            <form [formGroup]="addProductForm" (ngSubmit)="addProduct()">
+              <div class="mb-3">
+                <label for="productID" class="form-label">Product ID</label>
+                <input type="number" id="productID" formControlName="productID" class="form-control">
+                <div *ngIf="addProductForm.get('productID')?.invalid && addProductForm.get('productID')?.touched" class="text-danger small mt-1">
+                  Product ID is required.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="name" class="form-label">Product Name</label>
+                <input type="text" id="name" formControlName="name" class="form-control">
+                <div *ngIf="addProductForm.get('name')?.invalid && addProductForm.get('name')?.touched" class="text-danger small mt-1">
+                  Product Name is required.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="price" class="form-label">Price</label>
+                <input type="number" id="price" formControlName="price" class="form-control">
+                <div *ngIf="addProductForm.get('price')?.invalid && addProductForm.get('price')?.touched" class="text-danger small mt-1">
+                  Price is required and must be at least 0.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="stockLevel" class="form-label">Stock Level</label>
+                <input type="number" id="stockLevel" formControlName="stockLevel" class="form-control">
+                <div *ngIf="addProductForm.get('stockLevel')?.invalid && addProductForm.get('stockLevel')?.touched" class="text-danger small mt-1">
+                  Stock Level is required and must be at least 0.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea id="description" formControlName="description" class="form-control"></textarea>
+                <div *ngIf="addProductForm.get('description')?.invalid && addProductForm.get('description')?.touched" class="text-danger small mt-1">
+                  Description is required.
+                </div>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-secondary me-2" (click)="showAddProductForm.set(false)">
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="!addProductForm.valid || isAddingProduct()" style="min-width: 120px;">
+                  <span *ngIf="isAddingProduct(); else btnText">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Adding...
+                  </span>
+                  <ng-template #btnText>
+                    Add Product
+                  </ng-template>
+                </button>
+              </div>
+            </form>
+            @if (formMessage()) {
+              <div class="alert mt-4" [ngClass]="{'alert-success': formMessage().isSuccess, 'alert-danger': !formMessage().isSuccess}">
+                {{ formMessage().text }}
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showEditProductForm()) {
+    <div class="modal d-block" tabindex="-1" role="dialog" style="background: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit Product</h5>
+            <button type="button" class="btn-close" aria-label="Close" (click)="showEditProductForm.set(false)"></button>
+          </div>
+          <div class="modal-body">
+            <form [formGroup]="editProductForm" (ngSubmit)="saveEditedProduct()">
+              <div class="mb-3">
+                <label for="editProductID" class="form-label">Product ID</label>
+                <input type="number" id="editProductID" formControlName="productID" class="form-control" readonly>
+                <div *ngIf="editProductForm.get('productID')?.invalid && editProductForm.get('productID')?.touched" class="text-danger small mt-1">
+                  Product ID is required.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="editName" class="form-label">Product Name</label>
+                <input type="text" id="editName" formControlName="name" class="form-control">
+                <div *ngIf="editProductForm.get('name')?.invalid && editProductForm.get('name')?.touched" class="text-danger small mt-1">
+                  Product Name is required.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="editPrice" class="form-label">Price</label>
+                <input type="number" id="editPrice" formControlName="price" class="form-control">
+                <div *ngIf="editProductForm.get('price')?.invalid && editProductForm.get('price')?.touched" class="text-danger small mt-1">
+                  Price is required and must be at least 10.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="editStockLevel" class="form-label">Stock Level</label>
+                <input type="number" id="editStockLevel" formControlName="stockLevel" class="form-control">
+                <div *ngIf="editProductForm.get('stockLevel')?.invalid && editProductForm.get('stockLevel')?.touched" class="text-danger small mt-1">
+                  Stock Level is required and must be at least 0.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="editDescription" class="form-label">Description</label>
+                <textarea id="editDescription" formControlName="description" class="form-control"></textarea>
+                <div *ngIf="editProductForm.get('description')?.invalid && editProductForm.get('description')?.touched" class="text-danger small mt-1">
+                  Description is required.
+                </div>
+              </div>
+              <div class="d-flex justify-content-end">
+                <button type="button" class="btn btn-secondary me-2" (click)="showEditProductForm.set(false)">
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary" [disabled]="!editProductForm.valid">
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showSuccessPopup()) {
+    <div class="modal d-block" tabindex="-1" role="dialog" style="background: rgba(0,0,0,0.5); z-index: 2000;">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content text-center">
+          <div class="modal-body py-5">
+            <span class="text-success fs-4 fw-bold">
+              <i class="bi bi-check-circle-fill me-2"></i>
+              {{ successPopupMessage() }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+
