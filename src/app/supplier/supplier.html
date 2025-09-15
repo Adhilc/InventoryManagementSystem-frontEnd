@@ -1,0 +1,185 @@
+<div class="supplier-container">
+  <div class="header">
+    <h1>Supplier Management</h1>
+    <p>Manage your suppliers efficiently</p>
+  </div>
+
+  <!-- Message Display -->
+  <div *ngIf="message" class="message" [class.success]="message.includes('successfully')" [class.error]="!message.includes('successfully')">
+    {{ message }}
+    <button class="close-btn" (click)="clearMessage()">×</button>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <span>Processing...</span>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <h2>Search Supplier</h2>
+    <div class="search-form">
+      <input 
+        type="number" 
+        [(ngModel)]="searchId" 
+        placeholder="Enter Supplier ID"
+        class="search-input"
+      >
+      <button (click)="searchSupplier()" class="search-btn" [disabled]="!searchId || loading">
+        Search
+      </button>
+    </div>
+
+    <!-- Search Result -->
+    <div *ngIf="searchResult" class="search-result">
+      <h3>Search Result</h3>
+      <div class="supplier-card">
+        <div class="supplier-info">
+          <p><strong>ID:</strong> {{ searchResult.supplierID }}</p>
+          <p><strong>Name:</strong> {{ searchResult.name }}</p>
+          <p><strong>Contact:</strong> {{ searchResult.contactInfo }}</p>
+          <p><strong>Products:</strong> {{ searchResult.productsSupplied }}</p>
+          <p><strong>Quantity:</strong> {{ searchResult.quantity }}</p>
+          <p><strong>Date:</strong> {{ searchResult.date | date:'short' }}</p>
+        </div>
+        <div class="supplier-actions">
+          <button (click)="editSupplier(searchResult)" class="edit-btn">Edit</button>
+          <button (click)="deleteSupplier(searchResult.supplierID!)" class="delete-btn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Supplier Form -->
+  <div class="form-section">
+    <h2>{{ isEditing ? 'Edit Supplier' : 'Add New Supplier' }}</h2>
+    <form [formGroup]="supplierForm" (ngSubmit)="onSubmit()" class="supplier-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="supplierID">Supplier ID *</label>
+          <input 
+            type="number" 
+            id="supplierID" 
+            formControlName="supplierID" 
+            placeholder="Enter supplier ID"
+            min="1"
+            [class.error]="supplierForm.get('supplierID')?.invalid && supplierForm.get('supplierID')?.touched"
+          >
+          <div *ngIf="supplierForm.get('supplierID')?.invalid && supplierForm.get('supplierID')?.touched" class="error-message">
+            Supplier ID is required (minimum 1)
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="name">Supplier Name *</label>
+          <input 
+            type="text" 
+            id="name" 
+            formControlName="name" 
+            placeholder="Enter supplier name"
+            [class.error]="supplierForm.get('name')?.invalid && supplierForm.get('name')?.touched"
+          >
+          <div *ngIf="supplierForm.get('name')?.invalid && supplierForm.get('name')?.touched" class="error-message">
+            Name is required (5-20 characters, no numbers)
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="productsSupplied">Products Supplied *</label>
+          <input 
+            type="text" 
+            id="productsSupplied" 
+            formControlName="productsSupplied" 
+            placeholder="Enter products supplied"
+            [class.error]="supplierForm.get('productsSupplied')?.invalid && supplierForm.get('productsSupplied')?.touched"
+          >
+          <div *ngIf="supplierForm.get('productsSupplied')?.invalid && supplierForm.get('productsSupplied')?.touched" class="error-message">
+            Products supplied is required
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="quantity">Quantity *</label>
+          <input 
+            type="number" 
+            id="quantity" 
+            formControlName="quantity" 
+            placeholder="Enter quantity"
+            min="1"
+            [class.error]="supplierForm.get('quantity')?.invalid && supplierForm.get('quantity')?.touched"
+          >
+          <div *ngIf="supplierForm.get('quantity')?.invalid && supplierForm.get('quantity')?.touched" class="error-message">
+            Quantity must be at least 1
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+          <div class="form-group">
+            <label for="date">Date *</label>
+            <input 
+              type="datetime-local" 
+              id="date" 
+              formControlName="date"
+              [class.error]="supplierForm.get('date')?.invalid && supplierForm.get('date')?.touched"
+            >
+            <div *ngIf="supplierForm.get('date')?.invalid && supplierForm.get('date')?.touched" class="error-message">
+              Date is required
+            </div>
+          </div>
+          <div class="form-group">
+          <label for="contactInfo">Contact Number *</label>
+          <input 
+            type="number" 
+            id="contactInfo" 
+            formControlName="contactInfo" 
+            placeholder="Enter 10-digit contact number"
+            min="1000000000"
+            max="9999999999"
+            [class.error]="supplierForm.get('contactInfo')?.invalid && supplierForm.get('contactInfo')?.touched"
+          >
+          <div *ngIf="supplierForm.get('contactInfo')?.invalid && supplierForm.get('contactInfo')?.touched" class="error-message">
+            Contact number must be 10 digits
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="supplierForm.invalid || loading" class="submit-btn">
+          {{ isEditing ? 'Update Supplier' : 'Add Supplier' }}
+        </button>
+        <button type="button" (click)="resetForm()" class="reset-btn">
+          {{ isEditing ? 'Cancel Edit' : 'Reset Form' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Suppliers List -->
+  <div class="list-section">
+    <h2>All Suppliers ({{ suppliers.length }})</h2>
+    <div *ngIf="suppliers.length === 0 && !loading" class="no-data">
+      No suppliers found. Add your first supplier above.
+    </div>
+    
+    <div class="suppliers-grid">
+      <div *ngFor="let supplier of suppliers" class="supplier-card">
+        <div class="supplier-info">
+          <h3>{{ supplier.name }}</h3>
+          <p><strong>ID:</strong> {{ supplier.supplierID }}</p>
+          <p><strong>Contact:</strong> {{ supplier.contactInfo }}</p>
+          <p><strong>Products:</strong> {{ supplier.productsSupplied }}</p>
+          <p><strong>Quantity:</strong> {{ supplier.quantity }}</p>
+          <p><strong>Date:</strong> {{ supplier.date | date:'short' }}</p>
+        </div>
+        <div class="supplier-actions">
+          <button (click)="editSupplier(supplier)" class="edit-btn">Edit</button>
+          <button (click)="deleteSupplier(supplier.supplierID!)" class="delete-btn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
