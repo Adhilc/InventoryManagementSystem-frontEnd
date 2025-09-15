@@ -1,0 +1,152 @@
+<app-navigation></app-navigation>
+<div class="dashboard-container">
+  <header class="dashboard-header">
+    <h1><i class="icon-dashboard"></i>Inventory Management Dashboard</h1>
+    <div class="loading-indicator" *ngIf="loading">
+      <div class="spinner"></div>
+      <span>Loading...</span>
+    </div>
+  </header>
+
+  <div class="dashboard-layout">
+    <!-- Left Section: Charts -->
+    <div class="charts-section">
+      <!-- Overall Stock Pie Chart -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3><i class="icon-pie-chart"></i>Overall Stock Distribution</h3>
+        </div>
+        <div class="chart-container pie-chart">
+          <canvas id="stockChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Low Stock Pie Chart -->
+      <div class="card chart-card">
+        <div class="card-header">
+          <h3><i class="icon-alert"></i>Low Stock Alert</h3>
+        </div>
+        <div class="chart-container pie-chart">
+          <canvas id="lowStockChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Section: Quantity Boxes -->
+    <div class="stats-section">
+      <!-- Summary Stats -->
+      <div class="stats-grid">
+        <div class="stat-box total-products">
+          <div class="stat-icon">📦</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ allStocks.length }}</div>
+            <div class="stat-label">Total Products</div>
+          </div>
+        </div>
+
+        <div class="stat-box low-stock">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ lowStocks.length }}</div>
+            <div class="stat-label">Low Stock Items</div>
+          </div>
+        </div>
+
+        <div class="stat-box total-quantity">
+          <div class="stat-icon">📊</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getTotalQuantity() }}</div>
+            <div class="stat-label">Total Quantity</div>
+          </div>
+        </div>
+
+        <div class="stat-box avg-stock">
+          <div class="stat-icon">📈</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ getAverageStock() }}</div>
+            <div class="stat-label">Avg Stock Level</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock Items List -->
+      <div class="card stock-list-card">
+        <div class="card-header">
+          <h3><i class="icon-list"></i>Stock Quantities</h3>
+        </div>
+        <div class="stock-items-container">
+          <div *ngFor="let stock of allStocks; trackBy: trackByProductId" 
+               class="stock-item" 
+               [class.low-stock-item]="isLowStock(stock)">
+            <div class="item-info">
+              <span class="item-name">{{ stock.name }}</span>
+              <span class="item-id">#{{ stock.productID }}</span>
+            </div>
+            <div class="quantity-display" [class.low-quantity]="isLowStock(stock)">
+              {{ stock.quantity }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Low Stock Details -->
+      <div class="card alert-card" *ngIf="lowStocks.length > 0">
+        <div class="card-header">
+          <h3><i class="icon-warning"></i>Items Requiring Attention</h3>
+        </div>
+        <div class="alert-items">
+          <div *ngFor="let stock of lowStocks" class="alert-item">
+            <div class="alert-info">
+              <span class="alert-name">{{ stock.name }}</span>
+              <span class="alert-id">#{{ stock.productID }}</span>
+            </div>
+            <div class="alert-quantity">{{ stock.quantity }} left</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Section: Reports -->
+  <div class="reports-section">
+    <!-- Order Reports -->
+    <div class="card report-card">
+      <div class="card-header">
+        <h3><i class="icon-orders"></i>Order Reports</h3>
+        <div class="date-filters">
+          <input type="date" [(ngModel)]="orderStartDate" class="date-input" 
+                 placeholder="Start Date">
+          <input type="date" [(ngModel)]="orderEndDate" class="date-input" 
+                 placeholder="End Date">
+          <button (click)="loadOrderReports()" class="btn btn-primary" 
+                  [disabled]="!orderStartDate || !orderEndDate">
+            🔍 Load Reports
+          </button>
+        </div>
+      </div>
+      <div class="chart-container bar-chart">
+        <canvas id="orderChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Supplier Reports -->
+    <div class="card report-card">
+      <div class="card-header">
+        <h3><i class="icon-suppliers"></i>Supplier Activity</h3>
+        <div class="date-filters">
+          <input type="datetime-local" [(ngModel)]="supplierStartDate" class="date-input" 
+                 placeholder="Start Date & Time">
+          <input type="datetime-local" [(ngModel)]="supplierEndDate" class="date-input" 
+                 placeholder="End Date & Time">
+          <button (click)="loadSupplierReports()" class="btn btn-primary" 
+                  [disabled]="!supplierStartDate || !supplierEndDate">
+            🔍 Load Reports
+          </button>
+        </div>
+      </div>
+      <div class="chart-container bar-chart">
+        <canvas id="supplierChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
