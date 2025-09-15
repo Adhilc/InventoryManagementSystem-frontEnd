@@ -1,0 +1,150 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="card-header">
+      <h3>
+        <i class="fas fa-box-open me-2"></i>
+        Welcome Back
+      </h3>
+      <p>Sign in to your Inventory Management System</p>
+    </div>
+    
+    <div class="card-body">
+      <!-- Message Display -->
+      <div *ngIf="message" 
+           class="alert alert-dismissible fade show" 
+           [ngClass]="{
+             'alert-danger': message.toLowerCase().includes('error') || 
+                          message.toLowerCase().includes('failed') || 
+                          message.toLowerCase().includes('invalid') || 
+                          message.toLowerCase().includes('not found'),
+             'alert-success': message.toLowerCase().includes('success') || 
+                            message.toLowerCase().includes('redirecting'),
+             'alert-info': !(message.toLowerCase().includes('error') || 
+                           message.toLowerCase().includes('failed') || 
+                           message.toLowerCase().includes('invalid') || 
+                           message.toLowerCase().includes('not found') ||
+                           message.toLowerCase().includes('success') || 
+                           message.toLowerCase().includes('redirecting'))
+           }" 
+           role="alert">
+        <div class="d-flex align-items-center">
+          <i class="fas fa-exclamation-circle me-2" *ngIf="message.toLowerCase().includes('error') || 
+                                                         message.toLowerCase().includes('failed') || 
+                                                         message.toLowerCase().includes('invalid') || 
+                                                         message.toLowerCase().includes('not found')"></i>
+          <i class="fas fa-check-circle me-2" *ngIf="message.toLowerCase().includes('success') || 
+                                                  message.toLowerCase().includes('redirecting')"></i>
+          <i class="fas fa-info-circle me-2" *ngIf="!(message.toLowerCase().includes('error') || 
+                                                   message.toLowerCase().includes('failed') || 
+                                                   message.toLowerCase().includes('invalid') || 
+                                                   message.toLowerCase().includes('not found') ||
+                                                   message.toLowerCase().includes('success') || 
+                                                   message.toLowerCase().includes('redirecting'))"></i>
+          <span>{{ message }}</span>
+        </div>
+        <button type="button" class="btn-close" (click)="clearMessage()" aria-label="Close"></button>
+      </div>
+
+      <!-- Login Form -->
+      <form (ngSubmit)="login()" #loginForm="ngForm" class="needs-validation" novalidate>
+        <div class="form-group mb-4">
+          <label for="username" class="form-label">
+            <i class="fas fa-user"></i>
+            Username
+          </label>
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fas fa-user"></i>
+            </span>
+            <input type="text" 
+                   class="form-control form-control-lg" 
+                   id="username" 
+                   [(ngModel)]="authRequest.username" 
+                   name="username" 
+                   required 
+                   placeholder="Enter your username"
+                   [disabled]="isLoading"
+                   autocomplete="username"
+                   autofocus>
+          </div>
+          <div class="invalid-feedback">
+            Please enter your username
+          </div>
+        </div>
+
+        <div class="form-group mb-4">
+          <div class="d-flex justify-content-between">
+            <label for="password" class="form-label">
+              <i class="fas fa-lock"></i>
+              Password
+            </label>
+            <a href="#" class="text-muted small" tabindex="-1">
+              <i class="fas fa-question-circle me-1"></i>Forgot password?
+            </a>
+          </div>
+          <div class="input-group">
+            <span class="input-group-text">
+              <i class="fas fa-lock"></i>
+            </span>
+            <input [type]="showPassword ? 'text' : 'password'" 
+                   class="form-control form-control-lg" 
+                   id="password" 
+                   [(ngModel)]="authRequest.password" 
+                   name="password" 
+                   required 
+                   placeholder="Enter your password"
+                   [disabled]="isLoading"
+                   autocomplete="current-password">
+            <button type="button" 
+                    class="btn btn-outline-secondary" 
+                    (click)="togglePasswordVisibility()"
+                    [disabled]="isLoading"
+                    [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'">
+              <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            </button>
+          </div>
+          <div class="invalid-feedback">
+            Please enter your password
+          </div>
+        </div>
+
+        <div class="d-grid gap-2 mb-4">
+          <button type="submit" 
+                  class="btn btn-primary btn-login" 
+                  [disabled]="loginForm.form.invalid || isLoading"
+                  [ngClass]="{'loading': isLoading}">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            <span *ngIf="!isLoading">
+              <i class="fas fa-sign-in-alt me-2"></i>
+            </span>
+            {{ isLoading ? 'Signing In...' : 'Sign In' }}
+          </button>
+        </div>
+
+        <div class="text-center">
+          <p class="text-muted mb-2">Don't have an account?</p>
+          <button type="button" 
+                  class="btn btn-outline-primary" 
+                  (click)="navigateToRegister()"
+                  [disabled]="isLoading">
+            <i class="fas fa-user-plus me-2"></i>
+            Create New Account
+          </button>
+        </div>
+      </form>
+    </div>
+    
+    <div class="card-footer bg-light text-center py-3">
+      <small class="text-muted">
+        <i class="fas fa-shield-alt me-1"></i>
+        Secure & Encrypted Connection
+      </small>
+    </div>
+  </div>
+  
+  <div class="text-center mt-4 position-absolute bottom-0 start-0 end-0 mb-3">
+    <small class="text-muted">
+      &copy; {{ currentYear }} Inventory Management System. All rights reserved.
+    </small>
+  </div>
+</div>

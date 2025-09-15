@@ -1,0 +1,267 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4 class="card-title mb-0">Order Management</h4>
+        </div>
+        <div class="card-body">
+          <!-- Navigation Tabs -->
+          <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab === 'create'" (click)="setActiveTab('create')" href="javascript:void(0)">
+                Create Order
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab === 'search'" (click)="setActiveTab('search')" href="javascript:void(0)">
+                Search Orders
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab === 'update'" (click)="setActiveTab('update')" href="javascript:void(0)">
+                Update Status
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" [class.active]="activeTab === 'viewOrders'" (click)="setActiveTab('viewOrders')" href="javascript:void(0)">
+                View Orders
+              </a>
+            </li>
+          </ul>
+
+          <!-- Message Display -->
+          <div *ngIf="message" [class]="messageClass" role="alert">
+            <strong>{{ message }}</strong>
+            <button type="button" class="btn-close" (click)="clearMessage()"></button>
+          </div>
+
+
+          <!-- Create Order Tab -->
+          <div *ngIf="activeTab === 'create'" class="tab-content">
+            <h5>Create New Order</h5>
+            <form (ngSubmit)="createOrder()" #createForm="ngForm">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="productId" class="form-label">Product ID</label>
+                    <input type="number" class="form-control" id="productId" 
+                           [(ngModel)]="newProduct.productId" name="productId" required min="1">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="quantity" class="form-label">Quantity</label>
+                    <input type="number" class="form-control" id="quantity" 
+                           [(ngModel)]="newProduct.quantity" name="quantity" required min="1">
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary" [disabled]="createForm.form.invalid || isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                Create Order
+              </button>
+            </form>
+          </div>
+
+          <!-- Search Orders Tab -->
+          <div *ngIf="activeTab === 'search'" class="tab-content">
+            <div class="row">
+              <!-- Search by Order ID -->
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h6>Search by Order ID</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <label for="searchOrderId" class="form-label">Order ID</label>
+                      <input type="number" class="form-control" id="searchOrderId" 
+                             [(ngModel)]="searchOrderId" min="1">
+                    </div>
+                    <button type="button" class="btn btn-primary" (click)="searchOrderById()" [disabled]="isLoading">
+                      <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                      Search
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Search by Customer ID -->
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h6>Search by Customer ID</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <label for="searchCustomerId" class="form-label">Customer ID</label>
+                      <input type="number" class="form-control" id="searchCustomerId" 
+                             [(ngModel)]="searchCustomerId" min="1">
+                    </div>
+                    <button type="button" class="btn btn-primary" (click)="searchOrdersByCustomerId()" [disabled]="isLoading">
+                      <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                      Search
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Single Order Result -->
+            <div *ngIf="selectedOrder" class="mt-4">
+              <h6>Order Details</h6>
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Customer ID</th>
+                      <th>Product ID</th>
+                      <th>Quantity</th>
+                      <th>Order Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>{{ selectedOrder.orderId }}</td>
+                      <td>{{ selectedOrder.customerId }}</td>
+                      <td>{{ selectedOrder.productId }}</td>
+                      <td>{{ selectedOrder.quantity }}</td>
+                      <td>{{ selectedOrder.orderDate | date:'short' }}</td>
+                      <td>
+                        <span class="badge" [class]="'bg-' + (selectedOrder.status === 'DELIVERED' ? 'success' : 
+                                                             selectedOrder.status === 'CANCELLED' ? 'danger' : 
+                                                             selectedOrder.status === 'ACCEPTED' ? 'info' : 'warning')">
+                          {{ selectedOrder.status }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Multiple Orders Result -->
+            <div *ngIf="orders.length > 0" class="mt-4">
+              <h6>Orders List</h6>
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Customer ID</th>
+                      <th>Product ID</th>
+                      <th>Quantity</th>
+                      <th>Order Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let order of orders">
+                      <td>{{ order.orderId }}</td>
+                      <td>{{ order.customerId }}</td>
+                      <td>{{ order.productId }}</td>
+                      <td>{{ order.quantity }}</td>
+                      <td>{{ order.orderDate | date:'short' }}</td>
+                      <td>
+                        <span class="badge" [class]="'bg-' + (order.status === 'DELIVERED' ? 'success' : 
+                                                             order.status === 'CANCELLED' ? 'danger' : 
+                                                             order.status === 'ACCEPTED' ? 'info' : 'warning')">
+                          {{ order.status }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Update Status Tab -->
+          <div *ngIf="activeTab === 'update'" class="tab-content">
+            <h5>Update Order Status</h5>
+            <form (ngSubmit)="updateOrderStatus()" #updateForm="ngForm">
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="updateOrderId" class="form-label">Order ID</label>
+                    <input type="number" class="form-control" id="updateOrderId" 
+                           [(ngModel)]="updateOrderId" name="updateOrderId" required min="1">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="mb-3">
+                    <label for="updateStatus" class="form-label">New Status</label>
+                    <select class="form-control" id="updateStatus" 
+                            [(ngModel)]="updateStatus" name="updateStatus" required>
+                      <option value="">Select Status</option>
+                      <option value="PENDING">PENDING</option>
+                      <option value="ACCEPTED">ACCEPTED</option>
+                      <option value="DELIVERED">DELIVERED</option>
+                      <option value="CANCELLED">CANCELLED</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-warning" [disabled]="updateForm.form.invalid || isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                Update Status
+              </button>
+            </form>
+          </div>
+
+          <!-- View Orders Tab -->
+          <div *ngIf="activeTab === 'viewOrders'" class="tab-content">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h5>All Orders</h5>
+              <button type="button" class="btn btn-primary" (click)="loadAllOrders()" [disabled]="isLoading">
+                <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                Load Orders
+              </button>
+            </div>
+
+            <!-- All Orders Results -->
+            <div *ngIf="allOrders.length > 0" class="mt-4">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Order ID</th>
+                      <th>Customer ID</th>
+                      <th>Product ID</th>
+                      <th>Quantity</th>
+                      <th>Order Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let order of allOrders">
+                      <td>{{ order.orderId }}</td>
+                      <td>{{ order.customerId }}</td>
+                      <td>{{ order.productId }}</td>
+                      <td>{{ order.quantity }}</td>
+                      <td>{{ order.orderDate | date:'short' }}</td>
+                      <td>
+                        <span class="badge" [class]="'bg-' + (order.status === 'DELIVERED' ? 'success' : 
+                                                             order.status === 'CANCELLED' ? 'danger' : 
+                                                             order.status === 'ACCEPTED' ? 'info' : 'warning')">
+                          {{ order.status }}
+                        </span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div *ngIf="allOrders.length === 0 && !isLoading" class="text-center mt-4">
+              <p class="text-muted">No orders found. Click "Load Orders" to fetch all orders.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

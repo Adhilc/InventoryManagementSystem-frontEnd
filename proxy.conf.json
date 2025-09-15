@@ -1,0 +1,14 @@
+{
+  "/api/order/*": {
+    "target": "http://localhost:8081",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/auth/*": {
+    "target": "http://localhost:1016",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}
