@@ -7,12 +7,15 @@ import {
   Validators,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { Product, ProductService } from '../services/product-service';
+import { AuthService } from '../services/auth.service';
+import { RoleNavComponent } from '../navigation/role-nav';
 
 @Component({
   selector: 'Products',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, CommonModule],
+  imports: [ReactiveFormsModule, FormsModule, CommonModule, RoleNavComponent],
   templateUrl: './products.html',
   styleUrl: './products.css',
 })
@@ -34,7 +37,7 @@ export class Products implements OnInit {
 
   addProductForm: FormGroup;
 
-  constructor(private productService: ProductService, private fb: FormBuilder) {
+  constructor(private productService: ProductService, private fb: FormBuilder, private authService: AuthService, private router: Router) {
     this.addProductForm = this.fb.group({
       productID: ['', Validators.required],
       name: ['', Validators.required],
@@ -55,6 +58,10 @@ export class Products implements OnInit {
 
   ngOnInit(): void {
     this.fetchProducts();
+  }
+
+  isAdmin(): boolean {
+    return this.authService.isAdmin();
   }
 
   fetchProducts(): void {
@@ -160,9 +167,10 @@ export class Products implements OnInit {
     }
   }
 
-  // New method for the Order button (placeholder)
+  // Navigate to order page with product ID
   orderProduct(product: Product): void {
-    alert(`Ordering product: ${product.name}`);
-    // Implement your ordering logic here, e.g., call a service
+    this.router.navigate(['/orders'], { 
+      queryParams: { productId: product.productID, productName: product.name } 
+    });
   }
 }

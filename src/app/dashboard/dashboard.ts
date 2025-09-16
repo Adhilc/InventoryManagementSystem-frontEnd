@@ -6,13 +6,13 @@ import { AnalyticsService } from '../services/analytics.service';
 import { OrderReportSent } from '../models/order-report.model';
 import { SupplierReportSent } from '../models/supplier-report.models';
 import { StockDTO, OverAllStock } from '../models/stock.model';
-import { Navigation } from '../navigation/navigation';
+import { RoleNavComponent } from '../navigation/role-nav';
 
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-dashboard',
-  imports: [CommonModule, FormsModule, Navigation],
+  imports: [CommonModule, FormsModule, RoleNavComponent],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css'
 })

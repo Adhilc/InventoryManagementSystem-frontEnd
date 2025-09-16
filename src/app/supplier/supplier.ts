@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { SupplierService, SupplierDTO } from '../services/supplier-service';
-
+import { RoleNavComponent } from '../navigation/role-nav';
+ 
 @Component({
   selector: 'app-supplier',
   standalone: true,
-  imports: [ReactiveFormsModule, FormsModule, CommonModule],
+  imports: [ReactiveFormsModule, FormsModule, CommonModule, RoleNavComponent],
   templateUrl: './supplier.html',
   styleUrl: './supplier.css'
 })
@@ -19,7 +20,7 @@ export class Supplier implements OnInit {
   editingId: number | null = null;
   loading = false;
   message = '';
-
+ 
   constructor(
     private fb: FormBuilder,
     private supplierService: SupplierService
@@ -33,11 +34,11 @@ export class Supplier implements OnInit {
       date: ['', [Validators.required]]
     });
   }
-
+ 
   ngOnInit() {
     this.loadAllSuppliers();
   }
-
+ 
   loadAllSuppliers() {
     this.loading = true;
     this.supplierService.getAllSuppliers().subscribe({
@@ -52,17 +53,17 @@ export class Supplier implements OnInit {
       }
     });
   }
-
+ 
   onSubmit() {
     console.log('Form submitted');
     console.log('Form valid:', this.supplierForm.valid);
     console.log('Form value:', this.supplierForm.value);
     console.log('Form errors:', this.supplierForm.errors);
-    
+   
     if (this.supplierForm.valid) {
       this.loading = true;
       const supplierData = this.supplierForm.value;
-
+ 
       if (this.isEditing && this.editingId) {
         this.supplierService.updateSupplier(this.editingId, supplierData).subscribe({
           next: () => {
@@ -102,7 +103,7 @@ export class Supplier implements OnInit {
       }
     }
   }
-
+ 
   searchSupplier() {
     if (this.searchId) {
       this.loading = true;
@@ -120,7 +121,7 @@ export class Supplier implements OnInit {
       });
     }
   }
-
+ 
   editSupplier(supplier: SupplierDTO) {
     this.isEditing = true;
     this.editingId = supplier.supplierID;
@@ -133,7 +134,7 @@ export class Supplier implements OnInit {
       date: supplier.date
     });
   }
-
+ 
   deleteSupplier(id: number) {
     if (confirm('Are you sure you want to delete this supplier?')) {
       this.loading = true;
@@ -151,7 +152,7 @@ export class Supplier implements OnInit {
       });
     }
   }
-
+ 
   resetForm() {
     this.supplierForm.reset();
     this.isEditing = false;
@@ -160,7 +161,7 @@ export class Supplier implements OnInit {
     this.searchResult = null;
     this.searchId = null;
   }
-
+ 
   clearMessage() {
     this.message = '';
   }

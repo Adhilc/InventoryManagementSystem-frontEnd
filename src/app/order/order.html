@@ -1,9 +1,12 @@
+<app-role-nav></app-role-nav>
+
 <div class="container-fluid">
   <div class="row">
     <div class="col-12">
       <div class="card">
         <div class="card-header">
           <h4 class="card-title mb-0">Order Management</h4>
+          <small class="text-muted">Role: {{ userRole }}</small>
         </div>
         <div class="card-body">
           <!-- Navigation Tabs -->
@@ -18,14 +21,14 @@
                 Search Orders
               </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" *ngIf="canUpdateStatus()">
               <a class="nav-link" [class.active]="activeTab === 'update'" (click)="setActiveTab('update')" href="javascript:void(0)">
                 Update Status
               </a>
             </li>
-            <li class="nav-item">
+            <li class="nav-item" *ngIf="canViewAllOrders()">
               <a class="nav-link" [class.active]="activeTab === 'viewOrders'" (click)="setActiveTab('viewOrders')" href="javascript:void(0)">
-                View Orders
+                View All Orders
               </a>
             </li>
           </ul>
@@ -40,6 +43,9 @@
           <!-- Create Order Tab -->
           <div *ngIf="activeTab === 'create'" class="tab-content">
             <h5>Create New Order</h5>
+            <div *ngIf="selectedProductName" class="alert alert-info mb-3">
+              <strong>Selected Product:</strong> {{ selectedProductName }} (ID: {{ newProduct.productId }})
+            </div>
             <form (ngSubmit)="createOrder()" #createForm="ngForm">
               <div class="row">
                 <div class="col-md-6">
@@ -87,11 +93,11 @@
                 </div>
               </div>
 
-              <!-- Search by Customer ID -->
-              <div class="col-md-6">
+              <!-- Search by Customer ID - Admin Only -->
+              <div class="col-md-6" *ngIf="canSearchByCustomerId()">
                 <div class="card">
                   <div class="card-header">
-                    <h6>Search by Customer ID</h6>
+                    <h6>Search by Customer ID <span class="badge bg-warning">Admin Only</span></h6>
                   </div>
                   <div class="card-body">
                     <div class="mb-3">
@@ -179,9 +185,9 @@
             </div>
           </div>
 
-          <!-- Update Status Tab -->
-          <div *ngIf="activeTab === 'update'" class="tab-content">
-            <h5>Update Order Status</h5>
+          <!-- Update Status Tab - Admin Only -->
+          <div *ngIf="activeTab === 'update' && canUpdateStatus()" class="tab-content">
+            <h5>Update Order Status <span class="badge bg-warning">Admin Only</span></h5>
             <form (ngSubmit)="updateOrderStatus()" #updateForm="ngForm">
               <div class="row">
                 <div class="col-md-6">
@@ -212,10 +218,10 @@
             </form>
           </div>
 
-          <!-- View Orders Tab -->
-          <div *ngIf="activeTab === 'viewOrders'" class="tab-content">
+          <!-- View All Orders Tab - Admin Only -->
+          <div *ngIf="activeTab === 'viewOrders' && canViewAllOrders()" class="tab-content">
             <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5>All Orders</h5>
+              <h5>All Orders <span class="badge bg-warning">Admin Only</span></h5>
               <button type="button" class="btn btn-primary" (click)="loadAllOrders()" [disabled]="isLoading">
                 <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
                 Load Orders

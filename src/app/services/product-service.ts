@@ -17,8 +17,8 @@ export class Product {
   providedIn: 'root'
 })
 export class ProductService {
-  // Replace this with your actual backend API URL
-  private apiUrl = 'http://localhost:8083/api/product';
+  // Using API Gateway
+  private apiUrl = '/api/product';
 
   constructor(private http: HttpClient) {}
 

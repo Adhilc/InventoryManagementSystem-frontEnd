@@ -9,7 +9,7 @@ import { StockDTO, OverAllStock } from '../models/stock.model';
   providedIn: 'root'
 })
 export class AnalyticsService {
-  private baseUrl = 'http://localhost:8085/api/report';
+  private baseUrl = '/api/report';
 
   constructor(private http: HttpClient) {}
 
@@ -52,7 +52,7 @@ export class AnalyticsService {
   private handleError = (error: HttpErrorResponse) => {
     console.error('API Error:', error);
     if (error.status === 0) {
-      console.error('Network error - check if backend is running on port 8085');
+      console.error('Network error - check if API Gateway is running on port 1016');
     } else {
       console.error(`Backend returned code ${error.status}, body was:`, error.error);
     }

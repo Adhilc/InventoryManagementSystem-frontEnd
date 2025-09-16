@@ -1,11 +1,35 @@
 {
   "/api/order/*": {
-    "target": "http://localhost:8081",
+    "target": "http://localhost:1016",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/product/*": {
+    "target": "http://localhost:1016",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
   },
   "/auth/*": {
+    "target": "http://localhost:1016",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/stock/*": {
+    "target": "http://localhost:1016",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/supplier/*": {
+    "target": "http://localhost:1016",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/api/report/*": {
     "target": "http://localhost:1016",
     "secure": false,
     "changeOrigin": true,

@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { StockmanagementService, Stock } from '../services/stockmanagement-service';
-
+import { RoleNavComponent } from '../navigation/role-nav';
+ 
 @Component({
   selector: 'stockmanagement',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RoleNavComponent],
   templateUrl: './stockmanagement.html',
   styleUrl: './stockmanagement.css'
 })
@@ -18,41 +19,54 @@ export class Stockmanagement implements OnInit {
   loading = false;
   message = '';
   messageType: 'success' | 'error' = 'success';
-
-  constructor(private stockService: StockmanagementService) {}
-
+ 
+  constructor(private stockService: StockmanagementService) {
+    console.log('StockmanagementService injected:', this.stockService);
+  }
+ 
   ngOnInit() {
+    console.log('Stock Management component initialized');
+   
+    // Set JWT token for testing
+    const testToken = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJWYW1zaXlwYWxhIiwicm9sZSI6IkFETUlOIiwiaWF0IjoxNzU3OTk2NTI3LCJleHAiOjE3NTgwMzI1Mjd9.4G0uBU9h3Xu5fSdxAifeYZGtOxxZF1yJ1e6UjkqAOvA';
+    localStorage.setItem('authToken', testToken);
+    console.log('JWT token set in localStorage for testing');
+   
     this.loadLowStockItems();
   }
-
+ 
   searchStock() {
     if (!this.productId) {
       this.showMessage('Please enter a valid Product ID', 'error');
       return;
     }
-
+ 
+    console.log('Searching for product ID:', this.productId);
     this.loading = true;
     this.stockService.getStockByProductId(this.productId).subscribe({
       next: (stock) => {
+        console.log('Stock data received:', stock);
         this.currentStock = stock;
         this.loading = false;
         this.showMessage('Stock information loaded successfully', 'success');
       },
       error: (error) => {
         this.loading = false;
-        console.error('Full error object:', error);
+        console.error('Search error - Full error object:', error);
+        console.error('Error status:', error.status);
+        console.error('Error message:', error.message);
         const backendMsg = this.extractErrorMessage(error);
         this.showMessage(backendMsg || `Error: ${error.status || ''} - ${error.message || 'Request failed'}`, 'error');
       }
     });
   }
-
+ 
   increaseStock() {
     if (!this.currentStock || !this.amount || this.amount <= 0) {
       this.showMessage('Please enter a valid amount to increase', 'error');
       return;
     }
-
+ 
     this.loading = true;
     this.stockService.increaseStock(this.currentStock.productID, this.amount).subscribe({
       next: (updatedStock) => {
@@ -70,13 +84,13 @@ export class Stockmanagement implements OnInit {
       }
     });
   }
-
+ 
   decreaseStock() {
     if (!this.currentStock || !this.amount || this.amount <= 0) {
       this.showMessage('Please enter a valid amount to decrease', 'error');
       return;
     }
-
+ 
     this.loading = true;
     this.stockService.decreaseStock(this.currentStock.productID, this.amount).subscribe({
       next: (updatedStock) => {
@@ -94,20 +108,22 @@ export class Stockmanagement implements OnInit {
       }
     });
   }
-
+ 
   loadLowStockItems() {
+    console.log('Loading low stock items...');
     this.stockService.getLowStockReport().subscribe({
       next: (items) => {
+        console.log('Low stock items received:', items);
         this.lowStockItems = items;
       },
       error: (error) => {
+        console.error('Error loading low stock items:', error);
         const backendMsg = this.extractErrorMessage(error);
         this.showMessage(backendMsg || 'Error loading low stock items', 'error');
-        console.error('Error loading low stock items:', error);
       }
     });
   }
-
+ 
   private showMessage(text: string, type: 'success' | 'error') {
     this.message = text;
     this.messageType = type;
@@ -115,27 +131,27 @@ export class Stockmanagement implements OnInit {
       this.message = '';
     }, 3000);
   }
-
+ 
   selectProduct(productId: number) {
     this.productId = productId;
     this.searchStock();
   }
-
+ 
   trackByProductId(index: number, item: Stock): number {
     return item.productID;
   }
-
+ 
   private extractErrorMessage(error: any): string {
     if (!error) return 'An unexpected error occurred';
-    
+   
     const statusPrefix = error?.status ? `Error ${error.status}: ` : '';
     const err = error?.error;
-
+ 
     // Handle different error response formats
     if (typeof err === 'string' && err.trim()) {
       return `${statusPrefix}${err}`;
     }
-
+ 
     if (err && typeof err === 'object') {
       if (err.message && typeof err.message === 'string') {
         return `${statusPrefix}${err.message}`;
@@ -147,11 +163,11 @@ export class Stockmanagement implements OnInit {
         return `${statusPrefix}${err.detail}`;
       }
     }
-
+ 
     if (error?.message && typeof error.message === 'string') {
       return `${statusPrefix}${error.message}`;
     }
-
+ 
     // Provide user-friendly messages based on status codes
     switch (error?.status) {
       case 404:

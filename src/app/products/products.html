@@ -1,7 +1,9 @@
+<app-role-nav></app-role-nav>
+
 <div class="container py-5">
   <h1 class="text-center mb-5">Product List</h1>
 
-  <div class="text-center mb-4">
+  <div class="text-center mb-4" *ngIf="isAdmin()">
     <button class="btn btn-primary rounded-pill shadow" (click)="showAddProductForm.set(true)">
       Add New Product
     </button>
@@ -21,7 +23,7 @@
             <p class="card-text fst-italic mt-3">{{ product.description }}</p>
 
             <div class="d-flex justify-content-between align-items-center mt-3">
-              <button class="btn btn-warning btn-sm" (click)="openEditForm(product)">
+              <button *ngIf="isAdmin()" class="btn btn-warning btn-sm" (click)="openEditForm(product)">
                 <i class="bi bi-pencil-square"></i> Edit
               </button>
               <button class="btn btn-success btn-sm" (click)="orderProduct(product)">
@@ -29,7 +31,7 @@
               </button>
             </div>
             
-            <div class="position-absolute top-0 end-0 p-2">
+            <div class="position-absolute top-0 end-0 p-2" *ngIf="isAdmin()">
               <button class="btn btn-danger btn-sm rounded-circle shadow-sm" (click)="deleteProduct(product.productID)">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                   <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6a.5.5 0 0 0-.5-.5z"/>

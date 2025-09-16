@@ -32,10 +32,15 @@ export class LoginComponent {
 
     this.authService.login(this.authRequest).subscribe({
       next: (token: string) => {
-        localStorage.setItem('authToken', token);
-        this.message = 'Login successful! Redirecting to dashboard...';
+        this.message = 'Login successful! Redirecting...';
         setTimeout(() => {
-          this.router.navigate(['/orders']);
+          // Redirect based on user role
+          const userRole = this.authService.getUserRole();
+          if (userRole === 'ADMIN') {
+            this.router.navigate(['/dashboard']);
+          } else {
+            this.router.navigate(['/products']);
+          }
         }, 1500);
       },
       error: (error: any) => {

@@ -1,17 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { OrderService } from '../services/order.service';
+import { AuthService } from '../services/auth.service';
 import { Order, Product } from '../models/order.model';
+import { RoleNavComponent } from '../navigation/role-nav';
 
 @Component({
   selector: 'app-order',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RoleNavComponent],
   templateUrl: './order.html',
   styleUrls: ['./order.css']
 })
-export class OrderComponent {
+export class OrderComponent implements OnInit {
   orders: Order[] = [];
   allOrders: Order[] = [];
   selectedOrder: Order | null = null;
@@ -22,13 +25,57 @@ export class OrderComponent {
   searchCustomerId: number = 0;
   updateOrderId: number = 0;
   updateStatus: string = '';
+  selectedProductName: string = '';
 
   // UI state
   activeTab: string = 'create';
   message: string = '';
   isLoading: boolean = false;
 
-  constructor(private orderService: OrderService) {}
+  // Role-based permissions
+  isAdmin = false;
+  isUser = false;
+  userRole = '';
+
+  constructor(private orderService: OrderService, private authService: AuthService, private route: ActivatedRoute) {}
+
+  ngOnInit() {
+    this.checkUserRole();
+    this.authService.currentUser$.subscribe(() => {
+      this.checkUserRole();
+    });
+    
+    // Test endpoints for debugging
+    this.orderService.testEndpoints();
+    
+    // Handle query parameters for product ordering
+    this.route.queryParams.subscribe(params => {
+      if (params['productId']) {
+        this.newProduct.productId = +params['productId'];
+        this.selectedProductName = params['productName'] || '';
+        this.activeTab = 'create'; // Switch to create order tab
+        this.message = `Ready to create order for: ${this.selectedProductName}`;
+      }
+    });
+  }
+
+  checkUserRole() {
+    this.isAdmin = this.authService.isAdmin();
+    this.isUser = this.authService.isUser();
+    this.userRole = this.authService.getUserRole();
+  }
+
+  canUpdateStatus(): boolean {
+    return this.isAdmin;
+  }
+
+  canViewAllOrders(): boolean {
+    return this.isAdmin;
+  }
+
+  canSearchByCustomerId(): boolean {
+    return this.isAdmin;
+  }
 
 
   private normalizeMessage(m: any): string {
@@ -84,14 +131,24 @@ export class OrderComponent {
 
     this.clearMessage();
     this.isLoading = true;
+    console.log('Searching for order ID:', this.searchOrderId);
 
     this.orderService.getOrderById(this.searchOrderId).subscribe({
-      next: (order: Order) => {
-        this.selectedOrder = order;
-        this.message = 'Order found successfully!';
+      next: (response: any) => {
+        console.log('Order response:', response);
+        try {
+          // Handle both JSON object and string responses
+          const order = typeof response === 'string' ? JSON.parse(response) : response;
+          this.selectedOrder = order;
+          this.message = 'Order found successfully!';
+        } catch (e) {
+          console.error('Error parsing order response:', e);
+          this.message = 'Error parsing order data';
+        }
         this.isLoading = false;
       },
       error: (error: any) => {
+        console.error('Error searching order by ID:', error);
         this.selectedOrder = null;
         this.message = this.normalizeMessage(error);
         this.isLoading = false;
@@ -107,14 +164,25 @@ export class OrderComponent {
 
     this.clearMessage();
     this.isLoading = true;
+    console.log('Searching for customer ID:', this.searchCustomerId);
 
     this.orderService.getOrdersByCustomerId(this.searchCustomerId).subscribe({
-      next: (orders: Order[]) => {
-        this.orders = orders || [];
-        this.message = `Found ${this.orders.length} orders for customer ${this.searchCustomerId}`;
+      next: (response: any) => {
+        console.log('Customer orders response:', response);
+        try {
+          // Handle both JSON array and string responses
+          const orders = typeof response === 'string' ? JSON.parse(response) : response;
+          this.orders = Array.isArray(orders) ? orders : [];
+          this.message = `Found ${this.orders.length} orders for customer ${this.searchCustomerId}`;
+        } catch (e) {
+          console.error('Error parsing customer orders response:', e);
+          this.orders = [];
+          this.message = 'Error parsing orders data';
+        }
         this.isLoading = false;
       },
       error: (error: any) => {
+        console.error('Error searching orders by customer ID:', error);
         this.orders = [];
         this.message = this.normalizeMessage(error);
         this.isLoading = false;
@@ -127,9 +195,18 @@ export class OrderComponent {
     this.isLoading = true;
 
     this.orderService.getAllOrders().subscribe({
-      next: (orders: Order[]) => {
-        this.allOrders = orders || [];
-        this.message = `Found ${this.allOrders.length} orders`;
+      next: (response: any) => {
+        console.log('All orders response:', response);
+        try {
+          // Handle both JSON array and string responses
+          const orders = typeof response === 'string' ? JSON.parse(response) : response;
+          this.allOrders = Array.isArray(orders) ? orders : [];
+          this.message = `Found ${this.allOrders.length} orders`;
+        } catch (e) {
+          console.error('Error parsing all orders response:', e);
+          this.allOrders = [];
+          this.message = 'Error parsing orders data';
+        }
         this.isLoading = false;
       },
       error: (error: any) => {
@@ -148,15 +225,18 @@ export class OrderComponent {
 
     this.clearMessage();
     this.isLoading = true;
+    console.log('Updating order status:', this.updateOrderId, 'to', this.updateStatus);
 
     this.orderService.updateOrderStatus(this.updateOrderId, this.updateStatus).subscribe({
       next: (response: string) => {
+        console.log('Order status update response:', response);
         this.message = this.normalizeMessage(response || 'Order status updated successfully!');
         this.updateOrderId = 0;
         this.updateStatus = '';
         this.isLoading = false;
       },
       error: (error: any) => {
+        console.error('Error updating order status:', error);
         this.message = this.normalizeMessage(error);
         this.isLoading = false;
       }
